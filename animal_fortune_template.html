@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>動物占い診断</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; text-align: center; }
+    h1 { color: #333; }
+    label, select, input { font-size: 1em; margin: 0.5em; }
+    .result { margin-top: 2em; font-size: 1.5em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>動物占い診断</h1>
+  <p>あなたの生年月日を選んでください。</p>
+  <form id="fortune-form">
+    <label for="year">年:</label>
+    <select id="year">
+      <!-- 年はJavaScriptで動的に追加 -->
+    </select>
+    <label for="month">月:</label>
+    <select id="month">
+      ${[...Array(12).keys()].map(m => `<option value="${m+1}">${m+1}</option>`).join('')}
+    </select>
+    <label for="day">日:</label>
+    <select id="day">
+      ${[...Array(31).keys()].map(d => `<option value="${d+1}">${d+1}</option>`).join('')}
+    </select>
+    <br>
+    <button type="submit">診断する</button>
+  </form>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    // 動物配列（1〜60）
+    const animalMap = [
+      '', 'チーター','たぬき','猿','コアラ','黒ひょう','虎','チーター','たぬき','猿','コアラ',
+      'こじか','ゾウ','狼','ひつじ','猿','コアラ','こじか','ゾウ','狼','ひつじ','ペガサス',
+      'ペガサス','ひつじ','狼','狼','ひつじ','ペガサス','ペガサス','ひつじ','狼','ゾウ','こじか',
+      'コアラ','猿','ひつじ','狼','ゾウ','こじか','コアラ','猿','たぬき','チーター','虎','黒ひょう',
+      'コアラ','猿','たぬき','チーター','虎','黒ひょう','ライオン','ライオン','黒ひょう','虎','虎',
+      '黒ひょう','ライオン','ライオン','黒ひょう','虎'
+    ];
+
+    let baseTable = {};
+
+    // 年のセレクトボックスに1926〜2030を追加
+    const yearSelect = document.getElementById('year');
+    for (let y = 1926; y <= 2030; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+
+    // baseTableの読み込み
+    fetch('baseTable_1926_2030.json')
+      .then(res => res.json())
+      .then(data => { baseTable = data; });
+
+    // 診断処理
+    document.getElementById('fortune-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const year = document.getElementById('year').value;
+      const month = document.getElementById('month').value;
+      const day = parseInt(document.getElementById('day').value);
+
+      const key = `${year}-${month}`;
+      const base = parseInt(baseTable[key]);
+
+      if (isNaN(base)) {
+        document.getElementById('result').textContent = '診断データが見つかりません。';
+        return;
+      }
+
+      let total = base + day;
+      if (total > 60) total -= 60;
+
+      const resultAnimal = animalMap[total];
+      document.getElementById('result').textContent = `あなたの動物は「${resultAnimal}」です！`;
+    });
+  </script>
+</body>
+</html>
